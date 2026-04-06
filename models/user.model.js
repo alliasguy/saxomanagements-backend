@@ -36,7 +36,9 @@ const user = new mongoose.Schema(
     trader: {type: String},
     server: { type: String },
     rank: { type: String, default: 'silver' },
-    withdrawAmount : {type:Number,default:0}
+    withdrawAmount : {type:Number,default:0},
+    kycSubmitted: {type: Boolean, default: false},
+    kycDocument: {type: String, default: ''}
   }
 )
 const User = mongoose.models.User || mongoose.model('User', user)

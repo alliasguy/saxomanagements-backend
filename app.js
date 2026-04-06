@@ -277,7 +277,9 @@ app.get('/api/getData', async (req, res) => {
       rank: user.rank,
       server: user.server,
       trades: user.trades,
-      verified:user.verified
+      verified:user.verified,
+      kycSubmitted: user.kycSubmitted,
+      kycDocument: user.kycDocument
     });
   } catch (error) {
     console.error('Error fetching user data:', error.message);
@@ -970,6 +972,35 @@ app.post('/api/resetpassword', async (req, res) => {
 });
 
 
+
+app.post('/api/submitKyc', async (req, res) => {
+  const token = req.headers['x-access-token'];
+  try {
+    const decode = jwt.verify(token, jwtSecret);
+    const email = decode.email;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.json({ status: 400, message: 'User not found' });
+    }
+    const { firstName, lastName, country, state, postalCode, address, documentUrl } = req.body;
+    await User.updateOne({ email }, {
+      $set: {
+        firstname: firstName || user.firstname,
+        lastname: lastName || user.lastname,
+        country: country || user.country,
+        state: state || user.state,
+        zipcode: postalCode || user.zipcode,
+        address: address || user.address,
+        kycSubmitted: true,
+        kycDocument: documentUrl || user.kycDocument
+      }
+    });
+    return res.json({ status: 200, message: 'KYC submitted successfully' });
+  } catch (error) {
+    console.error('KYC submission error:', error);
+    return res.json({ status: 500, message: 'Internal server error' });
+  }
+});
 
 module.exports = app
 
